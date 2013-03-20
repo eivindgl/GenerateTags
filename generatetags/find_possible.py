@@ -16,7 +16,7 @@ from logbook import info, notice, warn
 import os
 import gzip
 
-def load_genome(genome_dir):
+def load_genome_dir(genome_dir):
     '''
     Arguments:
     `genome_dir`: directory containing zipped per chrom fasta files
@@ -27,11 +27,31 @@ def load_genome(genome_dir):
     names = os.listdir(genome_dir)
     dna = {}
     for x in names:
+        assert x.endswith('.gz')
         name = x.split('.')[0]
         info('loading %s' % name)
         with gzip.open(os.path.join(genome_dir, x)) as f:
             stream = Bio.SeqIO.parse(f, 'fasta')
             dna[name] = stream.next().upper()
+    return dna
+
+def load_genome(path):
+    '''
+    Arguments:
+    `genome_dir`: directory containing zipped per chrom fasta files
+
+    Returns: A dict of sequence per chromosome
+    '''
+    notice('called')
+    if path.endswith('.gz'):
+        f = gzip.open(path, 'rb')
+    else:
+        f = open(path, 'r')
+    stream = Bio.SeqIO.parse(f, 'fasta')
+    dna = {}
+    for x in stream:
+        dna[x.id] = x.seq.upper()
+    f.close()
     return dna
 
 def all_matches_in_genome(needle, genome):
@@ -235,7 +255,7 @@ def save_fragments(filepath, fragments):
             f.write(bedentry_as_string(x.right_primer))
 
 
-def main(out_dir, genome, primers_filepath, re_site, 
+def main(out_dir, genome, primers_filepath, re_site,
          max_dist_rsite_primer):
     primer_sites_path = os.path.join(out_dir, 'primers.bed')
     re_cut_sites_path = os.path.join(out_dir, 're_cut_sites.bed')
