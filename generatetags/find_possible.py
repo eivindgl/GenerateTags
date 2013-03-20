@@ -14,7 +14,6 @@ import argparse
 import logbook
 from logbook import info, notice, warn
 import os
-import sys
 import gzip
 
 def load_genome(genome_dir):
