@@ -50,7 +50,7 @@ def load_genome(path):
     stream = Bio.SeqIO.parse(f, 'fasta')
     dna = {}
     for x in stream:
-        dna[x.id] = x.seq.upper()
+        dna[x.id] = x.upper()
     f.close()
     return dna
 
