@@ -8,9 +8,9 @@ from generatetags import find_tags, load_genome
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('output_dir')
     parser.add_argument('genome_dir')
     parser.add_argument('primers_fastq')
+    parser.add_argument('output_dir')
     parser.add_argument('-c', '--re_cut_site', default='CCGG')
     parser.add_argument('-m', '--max-distance-rsite-primer',
                         type=int, default=100)
