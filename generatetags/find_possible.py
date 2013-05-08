@@ -189,17 +189,18 @@ def bedentry_as_string(x, name=None, extra=None):
     return common + rest + '\n'
 
 
-def get_tag_interval(primer, re_cut, name=None):
+def get_tag_interval(primer, re_cut, re_offset, name=None):
         if primer.start < re_cut.start:
             assert primer.strand == '+'
             return tagint(primer.chrom, primer.start,
-                            re_cut.end, name, '+')
+                            re_cut.end - re_offset, name, '+')
         else:
             assert primer.strand == '-'
-            return tagint(primer.chrom, re_cut.start,
+            return tagint(primer.chrom, re_cut.start + re_offset,
                             primer.end, name, '-')
 
-def save_tags(filepath, fragments, genome=None):
+def save_tags(filepath, fragments, genome=None,
+              re_offset=0):
     def get_tag_intervals():
         for frag in fragments:
             # rev primer
@@ -208,7 +209,8 @@ def save_tags(filepath, fragments, genome=None):
                 rname = rname[:-4]
             rname += '_rev'
             rev_tag = get_tag_interval(frag.left_primer,
-                                       frag.left_rsite, name=rname)
+                                       frag.left_rsite, name=rname,
+                                       re_offset=re_offset)
             yield ('left_primer', rev_tag)
             # fwd primer
             fname = frag.right_primer.name
@@ -216,7 +218,8 @@ def save_tags(filepath, fragments, genome=None):
                 fname = fname[:-4]
             fname += '_fwd'
             fwd_tag = get_tag_interval(frag.right_primer,
-                                       frag.right_rsite, name=fname)
+                                       frag.right_rsite, name=fname,
+                                       re_offset=re_offset)
             yield ('right_primer', fwd_tag)
 
     notice('called')
@@ -256,7 +259,8 @@ def save_fragments(filepath, fragments):
 
 
 def main(out_dir, genome, primers_filepath, re_site,
-         max_dist_rsite_primer):
+         max_dist_rsite_primer,
+         re_offset=0):
     primer_sites_path = os.path.join(out_dir, 'primers.bed')
     re_cut_sites_path = os.path.join(out_dir, 're_cut_sites.bed')
     tags_bed_path = os.path.join(out_dir, 'tags.bed')
@@ -274,5 +278,7 @@ def main(out_dir, genome, primers_filepath, re_site,
     fragments = list(find_primer_pairs_bordering_fragment(
         re_cut_sites_path, primer_sites_path, max_dist_rsite_primer))
     save_fragments(tags_raw_bed_path, fragments)
-    save_tags(tags_bed_path, fragments)
-    save_tags(tags_fa_path, fragments, genome=genome)
+    save_tags(tags_bed_path, fragments,
+              re_offset=re_offset)
+    save_tags(tags_fa_path, fragments, genome=genome,
+              re_offset=re_offset)
